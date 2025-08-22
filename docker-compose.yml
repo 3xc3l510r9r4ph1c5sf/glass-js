@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  oro-os:
+    build: .
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Add Redis for session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Optional: Add PostgreSQL for data persistence
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: oro_os
+      POSTGRES_USER: oro_user
+      POSTGRES_PASSWORD: oro_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
